@@ -4,8 +4,11 @@ pytest==6.2.5
 cloudpickle==2.0.0
 loky==3.0.0
 distributed==2021.10.0
+dask[complete]==2021.10.0
+jupyter-server-proxy==3.1.0
 cython==0.29.24
 flask==2.0.2
+ninja==1.10.2.2
 
 # databases
 sqlalchemy==1.4.26

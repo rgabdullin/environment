@@ -5,11 +5,13 @@ RUN apt-get update --yes
 RUN apt-get install --yes apt-utils
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes build-essential gcc g++ 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes python3-dev python3-pip python3-wheel
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes htop tmux
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes htop tmux ninja-build
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes git
 
 # installing python packages
 RUN pip install -U pip
 RUN pip install -U setuptools
+RUN pip install -U cmake
 
 # tensorflow
 RUN pip3 install tensorflow==2.6.0 keras==2.6.0
@@ -28,6 +30,7 @@ RUN pip3 install torch==1.10.0+cu113 \
                  -f https://download.pytorch.org/whl/cu113/torch_stable.html
 RUN pip3 install albumentations==1.1.0
 RUN pip3 install torchsummary==1.5.1
+RUN pip3 install pytorch_lightning==1.5.1 torchmetrics==0.6.0 torchsummary==1.5.1
 
 # jax
 RUN pip3 install "jax[cuda]==0.2.24" -f https://storage.googleapis.com/jax-releases/jax_releases.html
@@ -49,6 +52,10 @@ RUN pip install -r /tmp/ml_requirements.txt
 
 ADD dl_requirements.txt /tmp/dl_requirements.txt
 RUN pip install -r /tmp/dl_requirements.txt
+
+
+# fix sklearn bug
+ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
 
 RUN mkdir /workspace
 WORKDIR /workspace
