@@ -1,12 +1,15 @@
 FROM nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
 
+# environment
+ENV DEBIAN_FRONTEND=noninteractive
+
 # updating apt
 RUN apt-get update --yes
 RUN apt-get install --yes apt-utils
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes build-essential gcc g++ 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes python3-dev python3-pip python3-wheel
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes htop tmux ninja-build
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --yes git
+RUN apt-get install --yes build-essential gcc g++ 
+RUN apt-get install --yes python3-dev python3-pip python3-wheel
+RUN apt-get install --yes htop tmux ninja-build
+RUN apt-get install --yes git
 
 # installing python packages
 RUN pip install -U pip
@@ -31,6 +34,10 @@ RUN pip3 install torch==1.10.0+cu113 \
 RUN pip3 install albumentations==1.1.0
 RUN pip3 install torchsummary==1.5.1
 RUN pip3 install pytorch_lightning==1.5.1 torchmetrics==0.6.0 torchsummary==1.5.1
+
+# opencv
+RUN apt-get install --yes ffmpeg libsm6 libxext6
+RUN pip3 install opencv-python==4.5.4.58
 
 # jax
 RUN pip3 install "jax[cuda]==0.2.24" -f https://storage.googleapis.com/jax-releases/jax_releases.html
