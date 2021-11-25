@@ -8,4 +8,4 @@ cd build
 echo $(pwd)
 cmake .. 
 make
-sudo make install
+make install
