@@ -13,7 +13,7 @@ RUN apt-get install --yes git
 
 # nvtop
 RUN git clone https://github.com/Syllo/nvtop.git /tmp/nvtop
-RUN cd nvtop && mkdir build && cd build && cmake .. && make && sudo make install
+RUN cd /tmp/nvtop && mkdir build && cd build && cmake .. && make && sudo make install
 
 # installing python packages
 RUN pip install -U pip
