@@ -26,8 +26,8 @@ RUN pip3 install tensorflow==2.6.0 keras==2.6.0
 
 # cupy
 RUN pip3 install cupy-cuda114==9.5.0
-RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library cutensor
-RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library nccl
+# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library cutensor
+# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library nccl
 
 # pytorch
 ENV NVIDIA_VISIBLE_DEVICES=all
