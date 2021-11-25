@@ -9,11 +9,11 @@ RUN apt-get install --yes apt-utils
 RUN apt-get install --yes build-essential gcc g++ 
 RUN apt-get install --yes python3-dev python3-pip python3-wheel
 RUN apt-get install --yes htop tmux ninja-build
-RUN apt-get install --yes git
+RUN apt-get install --yes git cmake make
 
 # nvtop
-RUN git clone https://github.com/Syllo/nvtop.git /tmp/nvtop
-RUN cd /tmp/nvtop && mkdir build && cd build && cmake .. && make && sudo make install
+ADD build_nvtop.sh /tmp/build_nvtop.sh
+RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
 
 # installing python packages
 RUN pip install -U pip
