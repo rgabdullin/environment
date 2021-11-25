@@ -11,6 +11,10 @@ RUN apt-get install --yes python3-dev python3-pip python3-wheel
 RUN apt-get install --yes htop tmux ninja-build
 RUN apt-get install --yes git
 
+# nvtop
+RUN git clone https://github.com/Syllo/nvtop.git /tmp/nvtop
+RUN cd nvtop && mkdir build && cd build && cmake .. && make && sudo make install
+
 # installing python packages
 RUN pip install -U pip
 RUN pip install -U setuptools
@@ -49,6 +53,8 @@ RUN pip3 install optax==0.0.9
 RUN pip3 install ipykernel==6.4.2 notebook==6.4.5 jupyter==1.0.0 widgetsnbextension==3.5.2 RISE==5.7.1
 RUN jupyter notebook --generate-config
 ADD jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
+RUN echo "c.NotebookApp.password = '`python3 -c "from notebook.auth import passwd; print(passwd('Ruslix96'))"`'" \
+    >> /root/.jupyter/jupyter_notebook_config.py
 
 # installing libraries
 ADD core_requirements.txt /tmp/core_requirements.txt
@@ -60,6 +66,9 @@ RUN pip install -r /tmp/ml_requirements.txt
 ADD dl_requirements.txt /tmp/dl_requirements.txt
 RUN pip install -r /tmp/dl_requirements.txt
 
+# k3d
+RUN jupyter nbextension install --py --sys-prefix k3d
+RUN jupyter nbextension enable --py --sys-prefix k3d
 
 # fix sklearn bug
 ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
