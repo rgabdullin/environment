@@ -12,6 +12,7 @@ RUN apt-get install --yes htop tmux ninja-build
 RUN apt-get install --yes git cmake make
 
 # nvtop
+RUN apt-get install --yes libncurses5-dev libncursesw5-dev
 ADD build_nvtop.sh /tmp/build_nvtop.sh
 RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
 
