@@ -12,6 +12,7 @@ ninja==1.10.2.2
 loguru==0.5.3
 plyfile==0.7.4
 plotly==5.4.0
+dacite==1.6.0
 
 # databases
 sqlalchemy==1.4.26

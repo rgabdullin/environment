@@ -9,14 +9,18 @@ services:
         restart: unless-stopped
     main:
         image: rgabdullin/environment:latest
+        environment: 
+            - NVIDIA_DRIVER_CAPABILITIES=all
+            - NVIDIA_VISIBLE_DEVICES=all
         build: 
             dockerfile: Dockerfile
             context: .
-        ports:
-            - 8888:8888
-            - 8787:8787
-            - 8786:8786
-            - 6006:6006
+        network_mode: host
+        # ports:
+        #     - 8888:8888
+        #     - 8787:8787
+        #     - 8786:8786
+        #     - 6006:6006
         volumes:
             - /workspace:/workspace
         shm_size: 1g

@@ -11,6 +11,25 @@ RUN apt-get install --yes python3-dev python3-pip python3-wheel
 RUN apt-get install --yes htop tmux ninja-build
 RUN apt-get install --yes git cmake make
 
+# EGL
+RUN apt-get install --yes libglvnd0 \
+                          libgl1 \
+                          libglx0 \
+                          libegl1 \
+                          libgles2 \
+                          libglvnd-dev \
+                          libgl1-mesa-dev \
+                          libegl1-mesa-dev \
+                          libgles2-mesa-dev \
+                          xvfb
+
+# for GLEW
+ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+ENV PYOPENGL_PLATFORM=egl
+COPY 10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
 # nvtop
 RUN apt-get install --yes libncurses5-dev libncursesw5-dev
 ADD build_nvtop.sh /tmp/build_nvtop.sh
@@ -30,7 +49,6 @@ RUN pip3 install cupy-cuda114==9.5.0
 # RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library nccl
 
 # pytorch
-ENV NVIDIA_VISIBLE_DEVICES=all
 RUN pip3 install torch==1.10.0+cu113 \ 
                  torchvision==0.11.1+cu113 \
                  torchaudio==0.10.0+cu113 \
