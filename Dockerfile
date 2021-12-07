@@ -40,6 +40,9 @@ RUN pip install -U pip
 RUN pip install -U setuptools
 RUN pip install -U cmake
 
+# vscode
+RUN pip3 install pylint
+
 # tensorflow
 RUN pip3 install tensorflow==2.6.0 keras==2.6.0
 
@@ -57,6 +60,9 @@ RUN pip3 install torch==1.10.0+cu113 \
 RUN pip3 install albumentations==1.1.0
 RUN pip3 install torchsummary==1.5.1
 RUN pip3 install pytorch_lightning==1.5.1 torchmetrics==0.6.0 torchsummary==1.5.1
+
+# pytorch3d
+RUN pip3 install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
 # opencv
 RUN apt-get install --yes ffmpeg libsm6 libxext6
