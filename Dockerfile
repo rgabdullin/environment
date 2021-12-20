@@ -98,6 +98,9 @@ RUN jupyter nbextension enable --py --sys-prefix k3d
 # fix sklearn bug
 ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
 
+# install nano
+RUN apt install --yes nano
+
 RUN mkdir /workspace
 WORKDIR /workspace
 CMD [ "jupyter", "notebook", "--allow-root" ]
