@@ -99,7 +99,7 @@ RUN jupyter nbextension enable --py --sys-prefix k3d
 ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
 
 # install nano
-RUN apt install --yes nano
+RUN apt install --yes nano wget
 
 RUN mkdir /workspace
 WORKDIR /workspace
