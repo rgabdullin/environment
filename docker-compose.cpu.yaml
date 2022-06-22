@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  main-cpu:
+    image: ${DOCKER_REGISTRY:-rgabdullin}/environment-ubuntu-cpu:${VERSION:-dev}
+    build:
+      dockerfile: .docker/Dockerfile
+      context: ubuntu-cpu
+    ports:
+      - ${JUPYTER_PORT:-8888}:${JUPYTER_PORT:-8888}
+    volumes:
+      - ${WORKSPACE_DIR:-~/python-workspace/}:/workspace
+    secrets:
+      - jupyter_password
+    command: /run/scripts/entrypoint.sh
+    networks: 
+      - internal
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+secrets:
+  jupyter_password:
+    file: private/jupyter_password
+
+networks:
+  internal:
+    external: false
