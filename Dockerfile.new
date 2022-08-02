@@ -1,0 +1,55 @@
+FROM rapidsai/rapidsai-core-dev:22.04-cuda11.5-devel-ubuntu20.04-py3.9
+
+# environment
+ENV DEBIAN_FRONTEND=noninteractive
+
+# updating apt
+RUN apt-get update --yes
+RUN apt-get install --yes apt-utils
+RUN apt-get install --yes build-essential gcc g++ 
+RUN apt-get install --yes python3-dev python3-pip python3-wheel
+RUN apt-get install --yes htop tmux ninja-build
+RUN apt-get install --yes git cmake make wget curl nano
+
+# EGL
+RUN apt-get install --yes libglvnd0 \
+                          libgl1 \
+                          libglx0 \
+                          libegl1 \
+                          libgles2 \
+                          libglvnd-dev \
+                          libgl1-mesa-dev \
+                          libegl1-mesa-dev \
+                          libgles2-mesa-dev \
+                          xvfb
+
+# for GLEW
+ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+ENV PYOPENGL_PLATFORM=egl
+COPY 10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
+# nvtop
+RUN apt-get install --yes libncurses5-dev libncursesw5-dev
+ADD build_nvtop.sh /tmp/build_nvtop.sh
+RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
+
+# for opencv
+RUN apt-get install --yes ffmpeg libsm6 libxext6
+
+# vscode
+RUN pip3 install --no-cache-dir pylint
+
+# installing libraries
+ADD core_requirements.txt /tmp/core_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/core_requirements.txt
+
+ADD ml_requirements.txt /tmp/ml_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/ml_requirements.txt
+
+ADD dl_requirements.txt /tmp/dl_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/dl_requirements.txt
+
+RUN mkdir /workspace
+WORKDIR /workspace

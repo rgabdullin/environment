@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.6.2-cudnn8-devel-ubuntu20.04
 
 # environment
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,7 +9,7 @@ RUN apt-get install --yes apt-utils
 RUN apt-get install --yes build-essential gcc g++ 
 RUN apt-get install --yes python3-dev python3-pip python3-wheel
 RUN apt-get install --yes htop tmux ninja-build
-RUN apt-get install --yes git cmake make
+RUN apt-get install --yes git cmake make wget curl nano
 
 # EGL
 RUN apt-get install --yes libglvnd0 \
@@ -35,71 +35,60 @@ RUN apt-get install --yes libncurses5-dev libncursesw5-dev
 ADD build_nvtop.sh /tmp/build_nvtop.sh
 RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
 
+# for opencv
+RUN apt-get install --yes ffmpeg libsm6 libxext6
+
 # installing python packages
-RUN pip install -U pip
-RUN pip install -U setuptools
-RUN pip install -U cmake
+RUN pip install --no-cache-dir -U pip
+RUN pip install --no-cache-dir -U setuptools
+RUN pip install --no-cache-dir -U cmake
 
 # vscode
-RUN pip3 install pylint
-
-# tensorflow
-RUN pip3 install tensorflow==2.6.0 keras==2.6.0
+RUN pip3 install --no-cache-dir pylint
 
 # cupy
-RUN pip3 install cupy-cuda114==9.5.0
-# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library cutensor
-# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library nccl
-
-# pytorch
-RUN pip3 install torch==1.10.0+cu113 \ 
-                 torchvision==0.11.1+cu113 \
-                 torchaudio==0.10.0+cu113 \
-                 torchtext==0.11.0 \
-                 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-RUN pip3 install albumentations==1.1.0
-RUN pip3 install torchsummary==1.5.1
-RUN pip3 install pytorch_lightning==1.5.1 torchmetrics==0.6.0 torchsummary==1.5.1
-
-# pytorch3d
-RUN pip3 install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
+RUN pip3 install --no-cache-dir cupy-cuda116
+RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library cutensor
+RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library nccl
 
 # opencv
-RUN apt-get install --yes ffmpeg libsm6 libxext6
-RUN pip3 install opencv-python==4.5.4.58
-
-# jax
-RUN pip3 install "jax[cuda]==0.2.24" -f https://storage.googleapis.com/jax-releases/jax_releases.html
-RUN pip3 install "jaxlib[cuda]==0.1.73" -f https://storage.googleapis.com/jax-releases/jax_releases.html
-RUN pip3 install rlax==0.0.4
-RUN pip3 install optax==0.0.9
+RUN pip3 install --no-cache-dir opencv-python
 
 # jupyter notebook
-RUN pip3 install ipykernel==6.4.2 notebook==6.4.5 jupyter==1.0.0 widgetsnbextension==3.5.2 RISE==5.7.1
+RUN pip3 install --no-cache-dir ipykernel notebook jupyter widgetsnbextension RISE
 RUN jupyter notebook --generate-config
 ADD jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
 RUN echo "c.NotebookApp.password = '`python3 -c "from notebook.auth import passwd; print(passwd('Ruslix96'))"`'" \
     >> /root/.jupyter/jupyter_notebook_config.py
 
+# pytorch
+RUN pip3 install --no-cache-dir tensorboard
+RUN pip3 install --no-cache-dir "torch<1.11" \ 
+                                torchvision \
+                                torchaudio \
+                                torchtext -f https://download.pytorch.org/whl/cu113/torch_stable.html
+RUN pip3 install --no-cache-dir albumentations torchsummary pytorch_lightning torchmetrics torchsummary
+
+
+# pytorch3d
+RUN pip3 install --no-cache-dir "git+https://github.com/facebookresearch/pytorch3d.git@stable"
+
+# fix sklearn bug
+# ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
+
 # installing libraries
 ADD core_requirements.txt /tmp/core_requirements.txt
-RUN pip install -r /tmp/core_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/core_requirements.txt
 
 ADD ml_requirements.txt /tmp/ml_requirements.txt
-RUN pip install -r /tmp/ml_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/ml_requirements.txt
 
 ADD dl_requirements.txt /tmp/dl_requirements.txt
-RUN pip install -r /tmp/dl_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/dl_requirements.txt
 
 # k3d
 RUN jupyter nbextension install --py --sys-prefix k3d
 RUN jupyter nbextension enable --py --sys-prefix k3d
-
-# fix sklearn bug
-ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
-
-# install nano
-RUN apt install --yes nano wget
 
 RUN mkdir /workspace
 WORKDIR /workspace

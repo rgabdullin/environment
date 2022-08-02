@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 services:
     mongodb:
         image: mongo:5.0.4-focal
@@ -15,6 +15,7 @@ services:
         build: 
             dockerfile: Dockerfile
             context: .
+            # runtime: nvidia
         network_mode: host
         # ports:
         #     - 8888:8888
@@ -23,11 +24,11 @@ services:
         #     - 6006:6006
         volumes:
             - /workspace:/workspace
-        shm_size: 1g
+        shm_size: 8g
         restart: unless-stopped
         runtime: nvidia
     rapidsai:
-        image: rapidsai/rapidsai-core:21.10-cuda11.2-runtime-ubuntu20.04-py3.8
+        image: rapidsai/rapidsai-core:22.02-cuda11.5-runtime-ubuntu20.04-py3.9
         ports:
             - 9888:8888
             - 9787:8787
