@@ -1,0 +1,44 @@
+--- _search.py  2022-06-22 15:39:27.820856640 +0000
++++ _search_fix.py      2022-06-27 16:12:49.228554696 +0000
+@@ -44,6 +44,8 @@
+ from ..metrics import check_scoring
+ from ..utils import deprecated
+ 
++from tqdm.auto import tqdm
++
+ __all__ = ["GridSearchCV", "ParameterGrid", "ParameterSampler", "RandomizedSearchCV"]
+ 
+ 
+@@ -804,7 +806,7 @@
+ 
+         base_estimator = clone(self.estimator)
+ 
+-        parallel = Parallel(n_jobs=self.n_jobs, pre_dispatch=self.pre_dispatch)
++        parallel = Parallel(n_jobs=self.n_jobs, pre_dispatch=self.pre_dispatch, verbose=self.verbose)
+ 
+         fit_and_score_kwargs = dict(
+             scorer=scorers,
+@@ -835,6 +837,12 @@
+                         )
+                     )
+ 
++                tasks = product(enumerate(candidate_params), enumerate(cv.split(X, y, groups)))
++                tasks = tqdm(tasks, 
++                             total=n_candidates * n_splits, 
++                             leave=False, 
++                             smoothing=0,
++                             disable=not self.verbose)
+                 out = parallel(
+                     delayed(_fit_and_score)(
+                         clone(base_estimator),
+@@ -847,9 +855,7 @@
+                         candidate_progress=(cand_idx, n_candidates),
+                         **fit_and_score_kwargs,
+                     )
+-                    for (cand_idx, parameters), (split_idx, (train, test)) in product(
+-                        enumerate(candidate_params), enumerate(cv.split(X, y, groups))
+-                    )
++                    for (cand_idx, parameters), (split_idx, (train, test)) in tasks
+                 )
+ 
+                 if len(out) < 1:
