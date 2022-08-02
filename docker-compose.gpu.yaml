@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+    main:
+        image: rgabdullin/environment-ubuntu-gpu:latest
+        build: 
+            dockerfile: Dockerfile
+            context: ubuntu-gpu
+        environment: 
+            - NVIDIA_DRIVER_CAPABILITIES=all
+            - NVIDIA_VISIBLE_DEVICES=all
+        ports:
+            - 8888:8888
+            - 6006:6006
+        volumes:
+            - /workspace:/workspace
+        secrets:
+            - jupyter_password
+        networks:
+            - internal
+        command: /run/scripts/entrypoint.sh
+        shm_size: 2g
+        runtime: nvidia
+        deploy:
+            replicas: 1
+            placement:
+                constraints:
+                    - "node.role==manager"
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 30s
+    mlflow:
+        image: rgabdullin/mlflow-server:latest
+        build:
+            dockerfile: .docker/Dockerfile
+            context: mlflow
+        ports:
+            - 5000:5000
+        networks: 
+            - internal
+        deploy:
+            replicas: 1
+            resources:
+                limits:
+                    cpus: '4.0'
+            placement:
+                constraints:
+                    - "node.role==manager"
+            restart_policy:
+                condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 30s
+secrets:
+    jupyter_password:
+        file: private/jupyter_password
+
+networks:
+    internal:
+        external: false

@@ -1,18 +1,19 @@
-FROM nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
 
 # environment
 ENV DEBIAN_FRONTEND=noninteractive
 
 # updating apt
 RUN apt-get update --yes
-RUN apt-get install --yes apt-utils
-RUN apt-get install --yes build-essential gcc g++ 
-RUN apt-get install --yes python3-dev python3-pip python3-wheel
-RUN apt-get install --yes htop tmux ninja-build
-RUN apt-get install --yes git cmake make
-
-# EGL
-RUN apt-get install --yes libglvnd0 \
+RUN apt-get install --yes apt-utils \
+                          build-essential gcc g++ \
+                          python3-dev python3-pip python3-wheel \
+                          htop tmux ninja-build \
+                          git cmake make curl wget nano wget \
+                          libncurses5-dev libncursesw5-dev \
+                          ffmpeg libsm6 libxext6 \
+                          supervisor \
+                          libglvnd0 \
                           libgl1 \
                           libglx0 \
                           libegl1 \
@@ -21,86 +22,67 @@ RUN apt-get install --yes libglvnd0 \
                           libgl1-mesa-dev \
                           libegl1-mesa-dev \
                           libgles2-mesa-dev \
-                          xvfb
+                          xvfb \
+                          && rm -rf /var/lib/apt/lists/*
+
+# nvtop
+COPY scripts/build_nvtop.sh /tmp/build_nvtop.sh
+RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
+
+# vscode server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # for GLEW
 ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
 ENV PYOPENGL_PLATFORM=egl
-COPY 10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
-# nvtop
-RUN apt-get install --yes libncurses5-dev libncursesw5-dev
-ADD build_nvtop.sh /tmp/build_nvtop.sh
-RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
+COPY files/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # installing python packages
-RUN pip install -U pip
-RUN pip install -U setuptools
-RUN pip install -U cmake
+RUN pip install --no-cache -U pip wheel
+RUN pip install --no-cache -U setuptools
 
 # vscode
-RUN pip3 install pylint
-
-# tensorflow
-RUN pip3 install tensorflow==2.6.0 keras==2.6.0
-
-# cupy
-RUN pip3 install cupy-cuda114==9.5.0
-# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library cutensor
-# RUN python3 -m cupyx.tools.install_library --cuda 11.4 --library nccl
-
-# pytorch
-RUN pip3 install torch==1.10.0+cu113 \ 
-                 torchvision==0.11.1+cu113 \
-                 torchaudio==0.10.0+cu113 \
-                 torchtext==0.11.0 \
-                 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-RUN pip3 install albumentations==1.1.0
-RUN pip3 install torchsummary==1.5.1
-RUN pip3 install pytorch_lightning==1.5.1 torchmetrics==0.6.0 torchsummary==1.5.1
-
-# pytorch3d
-RUN pip3 install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
-
-# opencv
-RUN apt-get install --yes ffmpeg libsm6 libxext6
-RUN pip3 install opencv-python==4.5.4.58
-
-# jax
-RUN pip3 install "jax[cuda]==0.2.24" -f https://storage.googleapis.com/jax-releases/jax_releases.html
-RUN pip3 install "jaxlib[cuda]==0.1.73" -f https://storage.googleapis.com/jax-releases/jax_releases.html
-RUN pip3 install rlax==0.0.4
-RUN pip3 install optax==0.0.9
+RUN pip3 install --no-cache pylint
 
 # jupyter notebook
-RUN pip3 install ipykernel==6.4.2 notebook==6.4.5 jupyter==1.0.0 widgetsnbextension==3.5.2 RISE==5.7.1
-RUN jupyter notebook --generate-config
-ADD jupyter_notebook_config.py /root/.jupyter/jupyter_notebook_config.py
-RUN echo "c.NotebookApp.password = '`python3 -c "from notebook.auth import passwd; print(passwd('Ruslix96'))"`'" \
-    >> /root/.jupyter/jupyter_notebook_config.py
+RUN pip3 install --no-cache ipykernel notebook jupyter widgetsnbextension RISE k3d
+RUN jupyter nbextension enable --py widgetsnbextension && \
+    jupyter nbextension install --py --sys-prefix k3d && \
+    jupyter nbextension enable --py --sys-prefix k3d
+
+# cupy
+RUN pip3 install --no-cache cupy-cuda116
+# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library cutensor
+# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library cudnn
+# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library nccl
+
+# nvidia smi
+RUN nvidia-smi
+
+# pytorch
+RUN pip3 install --no-cache torch torchvision torchaudio torchtext --extra-index-url https://download.pytorch.org/whl/cu116
+RUN pip3 install --no-cache albumentations pytorch_lightning torchmetrics torchsummary tensorboard
+
+# pytorch3d
+RUN pip3 install --no-cache "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
 # installing libraries
-ADD core_requirements.txt /tmp/core_requirements.txt
-RUN pip install -r /tmp/core_requirements.txt
+COPY core_requirements.txt /tmp/core_requirements.txt
+RUN pip install --no-cache -r /tmp/core_requirements.txt
 
-ADD ml_requirements.txt /tmp/ml_requirements.txt
-RUN pip install -r /tmp/ml_requirements.txt
+COPY ml_requirements.txt /tmp/ml_requirements.txt
+RUN pip install --no-cache -r /tmp/ml_requirements.txt
 
-ADD dl_requirements.txt /tmp/dl_requirements.txt
-RUN pip install -r /tmp/dl_requirements.txt
+# sklearn patch
+COPY files/search_fix.patch /tmp/search_fix.patch
+RUN patch /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py /tmp/search_fix.patch
 
-# k3d
-RUN jupyter nbextension install --py --sys-prefix k3d
-RUN jupyter nbextension enable --py --sys-prefix k3d
+# entrypoint
+COPY scripts/ /run/scripts
+COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# fix sklearn bug
-ADD search_fix.py /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py
-
-# install nano
-RUN apt install --yes nano wget
-
-RUN mkdir /workspace
 WORKDIR /workspace
-CMD [ "jupyter", "notebook", "--allow-root" ]
+CMD [ "/bin/bash" ]
