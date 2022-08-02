@@ -13,6 +13,8 @@ loguru
 plyfile
 plotly
 dacite
+h5py
+mlflow
 
 # databases
 sqlalchemy
