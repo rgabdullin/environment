@@ -7,6 +7,7 @@
 
 ## Build
 * `docker-compose build && docker-compose push`
+* `docker build -t rgabdullin/environment-ubuntu-gpu:latest -f ubuntu-gpu/Dockerfile ubuntu-gpu && docker push rgabdullin/environment-ubuntu-gpu:latest`
 
 ## Deploy
 * `docker stack deploy environment`
