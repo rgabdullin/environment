@@ -13,6 +13,7 @@ services:
             - 6006:6006
         volumes:
             - /workspace:/workspace
+            - /dev:/dev
         secrets:
             - jupyter_password
         networks:

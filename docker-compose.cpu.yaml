@@ -9,6 +9,8 @@ services:
       - 8888:8888
     volumes:
       - ~/workspace/:/workspace/
+      - /dev:/dev
+    privileged: true
     secrets:
       - jupyter_password
     command: /run/scripts/entrypoint.sh
