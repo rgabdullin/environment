@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  dask-scheduler:
+    image: localhost:5000/environment-ubuntu-cpu:latest
+    volumes:
+      - /workspace:/workspace
+      - /dev:/dev
+    command: dask scheduler
+    networks:
+      - net1
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.dask.scheduler==true"
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+  dask-worker:
+    image: localhost:5000/environment-ubuntu-cpu:latest
+    volumes:
+      - /workspace:/workspace
+      - /dev:/dev
+    command: dask worker tcp://dask-scheduler:8787
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.dask.scheduler==true"
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+    networks:
+      - net1
+networks:
+  net1:
+    external: false
+    attachable: true

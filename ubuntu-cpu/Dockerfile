@@ -19,9 +19,9 @@ RUN apt-get update --yes && \
 # python packages
 RUN pip3 install --no-cache -U pip wheel
 RUN pip3 install --no-cache pylint
-RUN pip3 install --no-cache ipykernel==6.4.2 notebook==6.4.5 jupyter==1.0.0 widgetsnbextension==3.5.2 RISE==5.7.1
+RUN pip3 install --no-cache ipykernel notebook jupyter widgetsnbextension RISE
 
-RUN pip3 install --no-cache ipywidgets k3d
+RUN pip3 install --no-cache ipykernel notebook jupyter widgetsnbextension RISE k3d
 RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter nbextension install --py --sys-prefix k3d
 RUN jupyter nbextension enable --py --sys-prefix k3d

@@ -1,0 +1,87 @@
+version: '3.9'
+services:
+  jupyter-cpu:
+    image: localhost:5000/environment-ubuntu-cpu:latest
+    build:
+      dockerfile: Dockerfile
+      context: ubuntu-cpu
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+        mode: host
+      - target: 8787
+        published: 8787
+        protocol: tcp
+        mode: host
+    volumes:
+      - /workspace:/workspace
+      - /dev:/dev
+    secrets:
+      - jupyter_password
+    command: /run/scripts/entrypoint.sh
+    networks: 
+      - net1
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.jupyter==true"
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+  jupyter-gpu:
+    image: localhost:5000/environment-ubuntu-gpu:latest
+    build: 
+      dockerfile: Dockerfile
+      context: ubuntu-gpu
+    environment: 
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+        mode: host
+      - target: 8787
+        published: 8787
+        protocol: tcp
+        mode: host
+    volumes:
+      - /workspace:/workspace
+      - /dev:/dev
+      - type: tmpfs
+        target: /dev/shm
+    secrets:
+        - jupyter_password
+    networks:
+        - net1
+    command: /run/scripts/entrypoint.sh
+    tmpfs:
+      - /shm_tmp:size=8192M
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.jupyter-gpu==true"
+      resources:
+        reservations:
+          generic_resources:
+            - discrete_resource_spec:
+                kind: 'NVIDIA-GPU'
+                value: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+secrets:
+  jupyter_password:
+    file: private/jupyter_password
+networks:
+  net1:
+    external: false
+    attachable: true
+    

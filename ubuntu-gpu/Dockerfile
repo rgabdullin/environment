@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
 
 # environment
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,14 +23,13 @@ RUN apt-get install --yes apt-utils \
                           libegl1-mesa-dev \
                           libgles2-mesa-dev \
                           xvfb \
+                          libudev-dev \
+                          libdrm-dev \
                           && rm -rf /var/lib/apt/lists/*
 
 # nvtop
 COPY scripts/build_nvtop.sh /tmp/build_nvtop.sh
 RUN chmod +x /tmp/build_nvtop.sh && /tmp/build_nvtop.sh
-
-# vscode server
-RUN curl -fsSL https://code-server.dev/install.sh | sh
 
 # for GLEW
 ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
@@ -44,9 +43,6 @@ COPY files/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 RUN pip install --no-cache -U pip wheel
 RUN pip install --no-cache -U setuptools
 
-# vscode
-RUN pip3 install --no-cache pylint
-
 # jupyter notebook
 RUN pip3 install --no-cache ipykernel notebook jupyter widgetsnbextension RISE k3d
 RUN jupyter nbextension enable --py widgetsnbextension && \
@@ -54,20 +50,12 @@ RUN jupyter nbextension enable --py widgetsnbextension && \
     jupyter nbextension enable --py --sys-prefix k3d
 
 # cupy
-RUN pip3 install --no-cache cupy-cuda116
-# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library cutensor
-# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library cudnn
-# RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library nccl
-
-# nvidia smi
-RUN nvidia-smi
+RUN pip3 install --no-cache cupy-cuda117
+RUN pip3 install --no-cache "jax[cuda11_cudnn82]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
 # pytorch
-RUN pip3 install --no-cache torch torchvision torchaudio torchtext --extra-index-url https://download.pytorch.org/whl/cu116
+RUN pip3 install --no-cache torch torchvision torchaudio torchtext
 RUN pip3 install --no-cache albumentations pytorch_lightning torchmetrics torchsummary tensorboard
-
-# pytorch3d
-RUN pip3 install --no-cache "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
 # installing libraries
 COPY core_requirements.txt /tmp/core_requirements.txt

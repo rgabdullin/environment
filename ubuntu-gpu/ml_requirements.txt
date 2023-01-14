@@ -4,7 +4,7 @@ pandas
 patsy
 matplotlib
 seaborn
-scikit-learn==1.0.1
+scikit-learn
 scikit-image
 statsmodels
 imbalanced-learn
@@ -14,3 +14,6 @@ gym
 pyffmpeg
 open3d
 opencv-python
+accelerate
+tensorboard
+moviepy
