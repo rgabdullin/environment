@@ -31,7 +31,8 @@ pandas
 patsy
 matplotlib
 seaborn
-scikit-learn
+# scikit-learn
+git+https://github.com/rgabdullin/scikit-learn.git@tqdm-gridsearchcv
 scikit-image
 statsmodels
 imbalanced-learn

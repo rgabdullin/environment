@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -28,8 +28,8 @@ RUN jupyter nbextension enable --py --sys-prefix k3d
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache -r /tmp/requirements.txt
 
-COPY search_fix.patch /tmp/search_fix.patch
-RUN patch /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py /tmp/search_fix.patch
+# COPY search_fix.patch /tmp/search_fix.patch
+# RUN patch /usr/local/lib/python3.8/dist-packages/sklearn/model_selection/_search.py /tmp/search_fix.patch
 
 COPY scripts/ /run/scripts
 COPY scripts/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
